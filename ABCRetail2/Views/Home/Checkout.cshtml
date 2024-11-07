@@ -1,0 +1,88 @@
+﻿@model ABCRetail2.ViewModels.CheckoutViewModel
+
+@{
+    ViewBag.Title = "Checkout";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h2 class="fade-in">Checkout</h2>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <!-- Display each item in the cart -->
+            @foreach (var item in Model.CartItems)
+            {
+                <div class="card mb-4 fade-in-up">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">@item.ProductName</h5>
+                        <p class="card-text"><strong>Price:</strong> R@(item.ProductPrice)</p>
+                        <p class="card-text"><strong>Quantity:</strong> @(item.Quantity)</p>
+                        <img class="img-thumbnail product-image mx-auto" src="@item.ProductImageUri" alt="Product Image" />
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-6">
+            <form asp-action="PlaceOrder" method="post" class="fade-in-up">
+                <!-- Hidden fields for each product in the cart -->
+                @foreach (var item in Model.CartItems)
+                {
+                    <input type="hidden" name="partitionKeys" value="@item.ProductPartitionKey" />
+                    <input type="hidden" name="rowKeys" value="@item.ProductRowKey" />
+                }
+
+                <!-- Customer information fields populated with existing data if available -->
+                <div class="mb-3">
+                    <label for="customerName" class="form-label">Your Name</label>
+                    <input type="text" class="form-control" id="customerName" name="customerName" value="@Model.CustomerName" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="customerEmail" class="form-label">Your Email</label>
+                    <input type="email" class="form-control" id="customerEmail" name="customerEmail" value="@Model.CustomerEmail" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="address" class="form-label">Address</label>
+                    <input type="text" class="form-control" id="address" name="address" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="city" class="form-label">City</label>
+                    <input type="text" class="form-control" id="city" name="city" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="zipCode" class="form-label">Zip Code</label>
+                    <input type="text" class="form-control" id="zipCode" name="zipCode" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="country" class="form-label">Country</label>
+                    <select class="form-control" id="country" name="country" required>
+                        <option value="">Select Country</option>
+                        <option value="South Africa">South Africa</option>
+                        <option value="United States">United States</option>
+                        <!-- Add more countries as needed -->
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="province" class="form-label">Province/State</label>
+                    <select class="form-control" id="province" name="province" required>
+                        <option value="">Select Province/State</option>
+                        <option value="Gauteng">Gauteng</option>
+                        <option value="California">California</option>
+                        <!-- Add more provinces/states as needed -->
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-place-order w-100">Proceed with Checkout</button>
+            </form>
+        </div>
+    </div>
+</div>

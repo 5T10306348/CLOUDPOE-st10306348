@@ -283,5 +283,33 @@ namespace ABCRetail2.Controllers
             if (!cartItems.Any()) return RedirectToAction("ViewCart");
             return View("Checkout", cartItems);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadContractFile(IFormFile file)
+        {
+            if (file != null && file.Length > 0)
+            {
+                // Define the path to save the file
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "contracts");
+                Directory.CreateDirectory(uploadsFolder);  // Ensure the folder exists
+
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Save the file to the server
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+
+                // Optionally, save file information in the database (e.g., file name, path, upload date)
+
+                // Redirect or display success message after upload
+                return RedirectToAction("Contracts");
+            }
+
+            ModelState.AddModelError("file", "Please select a file to upload.");
+            return View("Contracts");
+        }
     }
 }
