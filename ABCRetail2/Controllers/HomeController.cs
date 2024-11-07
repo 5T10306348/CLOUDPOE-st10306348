@@ -133,17 +133,20 @@ namespace ABCRetail2.Controllers
         [HttpPost]
         public async Task<IActionResult> AddProduct(IFormFile file, string name, string description, string price)
         {
-            if (!int.TryParse(price, out int parsedPrice))
+            // Validate and parse the price input
+            if (!decimal.TryParse(price, out decimal parsedPrice))
             {
                 ModelState.AddModelError("Price", "Invalid price format.");
                 return View();
             }
 
             string imageUri = string.Empty;
+
+            // Save the uploaded file to wwwroot/uploads directory
             if (file != null && file.Length > 0)
             {
                 string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                Directory.CreateDirectory(uploadsFolder);
+                Directory.CreateDirectory(uploadsFolder); // Ensure directory exists
 
                 string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
@@ -153,7 +156,7 @@ namespace ABCRetail2.Controllers
                     await file.CopyToAsync(fileStream);
                 }
 
-                imageUri = "/uploads/" + uniqueFileName;
+                imageUri = "/uploads/" + uniqueFileName; // Store the relative path
             }
             else
             {
@@ -161,26 +164,20 @@ namespace ABCRetail2.Controllers
                 return View();
             }
 
+            // Create and save the new product entity
             var product = new Product
             {
                 PartitionKey = "Product",
                 RowKey = Guid.NewGuid().ToString(),
                 Name = name,
                 Description = description,
-                Price = parsedPrice,
+                Price = (int)parsedPrice,  // Cast decimal to int
                 ImageUri = imageUri
             };
-
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
             return RedirectToAction("ManageProducts");
-        }
-
-        public async Task<IActionResult> ManageProducts()
-        {
-            var products = await _context.Products.ToListAsync();
-            return View(products);
         }
 
         [HttpPost]
