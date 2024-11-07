@@ -17,7 +17,7 @@ namespace ABCRetail2
             builder.Services.AddDbContext<RetailContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("ABCRetailDatabase")));
 
-            // Add session support
+            // Add distributed memory cache and session support
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>
             {
@@ -26,6 +26,7 @@ namespace ABCRetail2
                 options.Cookie.IsEssential = true;
             });
 
+            // Build the application
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -40,14 +41,18 @@ namespace ABCRetail2
 
             app.UseRouting();
 
-            app.UseSession();  // Enable session middleware
+            // Use session middleware
+            app.UseSession();
 
+            // Use authorization middleware
             app.UseAuthorization();
 
+            // Map controller routes
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
+            // Run the application
             app.Run();
         }
     }

@@ -1,0 +1,256 @@
+﻿/* Fade-in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.fade-in {
+    animation: fadeIn 1.5s ease-in-out;
+}
+
+    /* Add additional delay for sequential animations */
+    .fade-in.delay-1 {
+        animation-delay: 0.5s;
+    }
+
+    .fade-in.delay-2 {
+        animation-delay: 1s;
+    }
+
+    .fade-in.delay-3 {
+        animation-delay: 1.5s;
+    }
+
+
+
+
+
+/*banner moving text*/
+
+@keyframes moveText {
+    0% {
+        transform: translateX(0%);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.animated-text {
+    animation: moveText 100s linear infinite;
+    white-space: nowrap;
+    background-color: cornflowerblue; /* Adjust as needed */
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
+}
+
+/*featured products*/ 
+.section-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.section-subtitle {
+    font-size: 1.25rem;
+    color: #6c757d;
+}
+
+.product-card {
+    border: none;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+    .product-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+.card-title {
+    font-size: 1.5rem;
+    margin-top: 15px;
+    color: #007bff;
+}
+
+.card-subtitle {
+    font-size: 1.25rem;
+    margin-bottom: 10px;
+    color: #6c757d;
+}
+
+.card-text {
+    font-size: 1rem;
+    margin-bottom: 15px;
+    color: #343a40;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+}
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+
+
+/*partner section*/ 
+
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.section-subtitle {
+    font-size: 1.25rem;
+    color: #6c757d;
+    margin-bottom: 40px;
+}
+
+.partner-card {
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+    .partner-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .partner-card img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 50%;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .partner-card:hover img {
+        transform: scale(1.05);
+    }
+
+
+/*call to action*/ 
+
+.header14 {
+    background-attachment: fixed; /* Parallax effect */
+    padding: 100px 0;
+}
+
+.card {
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background for the card */
+    border-radius: 10px;
+}
+
+.card-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.card-text {
+    font-size: 1.25rem;
+    color: #f8f9fa;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    padding: 12px 30px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+    .btn-warning:hover {
+        background-color: #e0a800;
+        transform: translateY(-3px);
+    }
+
+.shadow-lg {
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+}
+
+
+/* Team Section Styles */
+.team-section .section-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.team-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    background-color: #fff;
+}
+
+    .team-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    }
+
+.team-img {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.team-card .card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.team-card .card-subtitle {
+    font-size: 1.25rem;
+    color: #6c757d;
+}
+
+
+/* Social Media Section Styles */
+#follow-us-2-umbSt6CfsY .mbr-section-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 40px;
+}
+
+#follow-us-2-umbSt6CfsY .social-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+#follow-us-2-umbSt6CfsY .soc-item {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+#follow-us-2-umbSt6CfsY .soc-link {
+    color: #343a40;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+    #follow-us-2-umbSt6CfsY .soc-link:hover {
+        color: #007bff;
+        transform: translateY(-5px);
+    }
+
+#follow-us-2-umbSt6CfsY .fab {
+    font-size: 2rem;
+}
+
