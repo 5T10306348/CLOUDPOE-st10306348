@@ -316,5 +316,57 @@ namespace ABCRetail2.Controllers
             ModelState.AddModelError("file", "Please select a file to upload.");
             return View("Contracts");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> EditProduct(Product updatedProduct, IFormFile file)
+        {
+            // Retrieve the existing product from the database
+            var product = await _context.Products
+                .FirstOrDefaultAsync(p => p.PartitionKey == updatedProduct.PartitionKey && p.RowKey == updatedProduct.RowKey);
+
+            if (product == null) return NotFound();
+
+            // Update product properties
+            product.Name = updatedProduct.Name;
+            product.Description = updatedProduct.Description;
+            product.Price = updatedProduct.Price;
+
+            // If a new image file is uploaded, replace the existing image
+            if (file != null && file.Length > 0)
+            {
+                // Define path for uploads
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                Directory.CreateDirectory(uploadsFolder); // Ensure the folder exists
+
+                // Generate a unique file name and save the file
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Save new image file
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+
+                // Delete the old image if one exists
+                if (!string.IsNullOrEmpty(product.ImageUri))
+                {
+                    var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", product.ImageUri.TrimStart('/'));
+                    if (System.IO.File.Exists(oldImagePath))
+                    {
+                        System.IO.File.Delete(oldImagePath);
+                    }
+                }
+
+                // Update ImageUri to new file path
+                product.ImageUri = "/uploads/" + uniqueFileName;
+            }
+
+            // Save changes to the database
+            _context.Products.Update(product);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("ManageProducts");
+        }
     }
 }

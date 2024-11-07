@@ -1,0 +1,50 @@
+﻿@model ABCRetail2.Models.Product
+
+@{
+    ViewBag.Title = "Edit Product";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2>Edit Product</h2>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditProduct" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="PartitionKey" value="@Model.PartitionKey" />
+                        <input type="hidden" name="RowKey" value="@Model.RowKey" />
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Product Name</label>
+                            <input type="text" class="form-control" id="name" name="Name" value="@Model.Name" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="Description" required>@Model.Description</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Price</label>
+                            <input type="text" class="form-control" id="price" name="Price" value="@Model.Price" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Product Image</label>
+                            <input type="file" class="form-control" id="file" name="file">
+                            @if (!string.IsNullOrEmpty(Model.ImageUri))
+                            {
+                                <img src="@Model.ImageUri" alt="Product Image" class="img-thumbnail mt-2" style="max-width: 200px;">
+                            }
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Update Product</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
