@@ -183,13 +183,18 @@ namespace ABCRetail2.Controllers
         [HttpPost]
         public async Task<IActionResult> SaveCustomerProfile(CustomerProfile profile)
         {
-            profile.PartitionKey = profile.CustomerEmail.Substring(0, 1).ToUpper();
-            profile.RowKey = Guid.NewGuid().ToString();
+            if (ModelState.IsValid)
+            {
+                profile.PartitionKey = profile.CustomerEmail.Substring(0, 1).ToUpper();
+                profile.RowKey = Guid.NewGuid().ToString();
 
-            _context.CustomerProfiles.Add(profile);
-            await _context.SaveChangesAsync();
+                _context.CustomerProfiles.Add(profile);
+                await _context.SaveChangesAsync();
 
-            return RedirectToAction("CustomerProfiles");
+                return RedirectToAction("CustomerProfiles");
+            }
+
+            return View("AddCustomerProfile", profile); // Reload form with validation errors if any
         }
 
         public async Task<IActionResult> CustomerProfiles()
