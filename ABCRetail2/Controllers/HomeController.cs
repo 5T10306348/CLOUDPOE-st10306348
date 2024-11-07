@@ -368,5 +368,32 @@ namespace ABCRetail2.Controllers
 
             return RedirectToAction("ManageProducts");
         }
+        public async Task<IActionResult> ManageProducts()
+        {
+            var products = await _context.Products.ToListAsync();
+            return View(products);
+        }
+
+        public async Task<IActionResult> EditProduct(string partitionKey, string rowKey)
+        {
+            var product = await _context.Products
+                .FirstOrDefaultAsync(p => p.PartitionKey == partitionKey && p.RowKey == rowKey);
+            return View(product);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteProduct(string partitionKey, string rowKey)
+        {
+            var product = await _context.Products
+                .FirstOrDefaultAsync(p => p.PartitionKey == partitionKey && p.RowKey == rowKey);
+
+            if (product != null)
+            {
+                _context.Products.Remove(product);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("ManageProducts");
+        }
     }
 }

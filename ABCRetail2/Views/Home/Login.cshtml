@@ -1,0 +1,89 @@
+﻿@{
+    ViewBag.Title = "Login";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg p-4">
+                <h2 class="text-center mb-4">ABCRetail - Login</h2>
+                <form asp-action="Login" method="post" class="needs-validation" novalidate>
+                    <div class="form-group mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="Email" placeholder="Enter your email" required>
+                        <div class="invalid-feedback">Please enter a valid email address.</div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="Password" placeholder="Enter your password" required>
+                        <div class="invalid-feedback">Password is required.</div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-block">Login</button>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="#" class="text-muted" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal" id="forgotPasswordLink">Forgot password?</a>
+                        <span class="mx-2">|</span>
+                        <a href="@Url.Action("Register", "Home")" class="text-muted">Don't have an account? Register here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Forgot Password Video -->
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="forgotPasswordModalLabel">TOO BAD LOL</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <video id="surpriseVideo" class="w-100" controls>
+                    <source src="~/WebRResources/surprise.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS (required for modals) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JavaScript to handle video and modal -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var video = document.getElementById('surpriseVideo');
+        var modalElement = document.getElementById('forgotPasswordModal');
+        var modal = new bootstrap.Modal(modalElement);
+
+        // Play the video when modal is shown
+        modalElement.addEventListener('shown.bs.modal', function () {
+            video.play();
+        });
+
+        // Reset the video and close modal when the video ends
+        video.onended = function () {
+            video.currentTime = 0;
+            modal.hide();
+            document.body.classList.remove('modal-open');
+            document.querySelector('.modal-backdrop')?.remove();
+        };
+
+        // Pause and reset the video when modal is hidden
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            video.pause();
+            video.currentTime = 0;
+        });
+
+        // Trigger the modal when the "Forgot password?" link is clicked
+        document.getElementById('forgotPasswordLink').addEventListener('click', function (e) {
+            e.preventDefault();
+            modal.show();
+        });
+    });
+</script>
