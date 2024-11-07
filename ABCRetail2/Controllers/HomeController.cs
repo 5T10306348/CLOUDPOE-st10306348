@@ -417,5 +417,47 @@ namespace ABCRetail2.Controllers
 
             return View(user); // Reloads the form with validation errors if any
         }
+
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Login(string email, string password)
+        {
+            // Find the user in the database by email
+            var user = await _context.UserAccounts.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid email or password.");
+                return View();
+            }
+
+            // Decode and verify the password
+            var hashedPassword = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password));
+            if (user.Password != hashedPassword)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid email or password.");
+                return View();
+            }
+
+            // Set session or authentication cookies
+            HttpContext.Session.SetString("UserEmail", user.Email);
+            HttpContext.Session.SetString("UserName", user.Username);
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        public IActionResult Logout()
+        {
+            // Clear the session
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login");
+        }
+
     }
 }
