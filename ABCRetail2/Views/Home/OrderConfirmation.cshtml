@@ -1,5 +1,39 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IEnumerable<ABCRetail2.Models.Order>
+
 @{
+    ViewBag.Title = "Order Confirmation";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h2 class="fade-in">Order Confirmation</h2>
+    </div>
+
+    @foreach (var order in Model)
+    {
+        <div class="card mb-4 shadow-lg fade-in-up">
+            <div class="card-body text-center">
+                <h5 class="card-title">@order.ProductName</h5>
+                <p class="card-text"><strong>Price:</strong> R@(order.ProductPrice)</p>
+                <p class="card-text"><strong>Customer Name:</strong> @order.CustomerName</p>
+                <p class="card-text"><strong>Customer Email:</strong> @order.CustomerEmail</p>
+                <p class="card-text"><strong>Address:</strong> @order.Address, @order.City, @order.Province, @order.ZipCode, @order.Country</p>
+
+                @if (!string.IsNullOrEmpty(order.ProductImageUri))
+                {
+                    <img class="img-thumbnail product-image mx-auto mt-4" src="@order.ProductImageUri" alt="Product Image" style="max-width: 200px;" />
+                }
+                else
+                {
+                    <p class="text-muted">No image available</p>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="text-center mt-4">
+        <a href="@Url.Action("ViewProducts", "Home")" class="btn btn-primary btn-animated">Back to Home</a>
+        <a href="@Url.Action("ViewOrders", "Home")" class="btn btn-secondary btn-animated">View Orders</a>
+    </div>
+</div>

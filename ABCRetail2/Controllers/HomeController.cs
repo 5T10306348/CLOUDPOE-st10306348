@@ -395,5 +395,27 @@ namespace ABCRetail2.Controllers
 
             return RedirectToAction("ManageProducts");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(UserAccount user)
+        {
+            if (ModelState.IsValid)
+            {
+                // Set PartitionKey and RowKey
+                user.PartitionKey = "User";
+                user.RowKey = Guid.NewGuid().ToString();
+
+                // Hash the password (use a real hashing method in production)
+                user.Password = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(user.Password));
+
+                // Save the user to the database
+                _context.UserAccounts.Add(user);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction("Login");
+            }
+
+            return View(user); // Reloads the form with validation errors if any
+        }
     }
 }
