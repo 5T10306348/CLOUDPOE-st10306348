@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using ABCRetail2.Data;  // Ensure this namespace points to where your DbContext is defined
+
 namespace ABCRetail2
 {
     public class Program
@@ -9,13 +12,16 @@ namespace ABCRetail2
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            // Add DbContext with SQL Server connection string from appsettings.json
+            builder.Services.AddDbContext<RetailContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("ABCRetailDatabase")));
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
