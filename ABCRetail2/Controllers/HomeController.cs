@@ -1,16 +1,19 @@
+using ABCRetail2.Data;
 using ABCRetail2.Models;
+using ABCRetail2.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace ABCRetail2.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly RetailContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(RetailContext context)
         {
-            _logger = logger;
+            _context = context;
         }
 
         public IActionResult Index()
@@ -18,15 +21,270 @@ namespace ABCRetail2.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public async Task<IActionResult> ViewProducts()
+        {
+            var products = await _context.Products.ToListAsync();
+            return View(products);
+        }
+
+        public async Task<IActionResult> Checkout(string partitionKey, string rowKey)
+        {
+            var product = await _context.Products
+                .FirstOrDefaultAsync(p => p.PartitionKey == partitionKey && p.RowKey == rowKey);
+
+            if (product == null) return NotFound();
+
+            // Create a new cart item based on the selected product
+            var cartItem = new CartItem
+            {
+                ProductName = product.Name,
+                ProductPrice = product.Price,
+                ProductImageUri = product.ImageUri,
+                Quantity = 1,
+                ProductPartitionKey = product.PartitionKey,
+                ProductRowKey = product.RowKey
+            };
+
+            var checkoutViewModel = new CheckoutViewModel
+            {
+                CartItems = new List<CartItem> { cartItem },
+                CustomerName = HttpContext.Session.GetString("CustomerName"),
+                CustomerEmail = HttpContext.Session.GetString("UserEmail")
+            };
+
+            return View(checkoutViewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PlaceOrder(
+            string[] partitionKeys, string[] rowKeys,
+            string customerName, string customerEmail, string address,
+            string city, string zipCode, string country, string province)
+        {
+            var userId = HttpContext.Session.GetString("UserEmail");
+            var cartItems = await _context.CartItems
+                .Where(c => c.PartitionKey == userId).ToListAsync();
+
+            var orders = new List<Order>();
+            for (int i = 0; i < partitionKeys.Length; i++)
+            {
+                var cartItem = cartItems
+                    .FirstOrDefault(c => c.ProductPartitionKey == partitionKeys[i] && c.ProductRowKey == rowKeys[i]);
+
+                if (cartItem != null)
+                {
+                    var order = new Order
+                    {
+                        PartitionKey = customerEmail,
+                        RowKey = Guid.NewGuid().ToString(),
+                        CustomerName = customerName,
+                        CustomerEmail = customerEmail,
+                        Address = address,
+                        City = city,
+                        ZipCode = zipCode,
+                        Country = country,
+                        Province = province,
+                        ProductName = cartItem.ProductName,
+                        ProductPrice = cartItem.ProductPrice,
+                        ProductImageUri = cartItem.ProductImageUri
+                    };
+
+                    _context.Orders.Add(order);
+                    orders.Add(order);
+
+                    var orderMessage = new OrderMessage
+                    {
+                        CustomerEmail = customerEmail,
+                        ProductName = cartItem.ProductName,
+                        ProductPrice = cartItem.ProductPrice
+                    };
+
+                    // Process orderMessage logic here if needed
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            _context.CartItems.RemoveRange(cartItems);
+            await _context.SaveChangesAsync();
+
+            return View("OrderConfirmation", orders);
+        }
+
+        public async Task<IActionResult> OrderConfirmation(string orderId)
+        {
+            var orders = await _context.Orders
+                .Where(o => o.RowKey == orderId).ToListAsync();
+
+            if (!orders.Any()) return NotFound("Order not found.");
+            return View(orders);
+        }
+
+        public async Task<IActionResult> ViewOrders()
+        {
+            var orders = await _context.Orders.ToListAsync();
+            return View(orders);
+        }
+
+        public IActionResult AddProduct()
         {
             return View();
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        [HttpPost]
+        public async Task<IActionResult> AddProduct(IFormFile file, string name, string description, string price)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            if (!int.TryParse(price, out int parsedPrice))
+            {
+                ModelState.AddModelError("Price", "Invalid price format.");
+                return View();
+            }
+
+            string imageUri = string.Empty;
+            if (file != null && file.Length > 0)
+            {
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                Directory.CreateDirectory(uploadsFolder);
+
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+
+                imageUri = "/uploads/" + uniqueFileName;
+            }
+            else
+            {
+                ModelState.AddModelError("File", "Please upload a valid product image.");
+                return View();
+            }
+
+            var product = new Product
+            {
+                PartitionKey = "Product",
+                RowKey = Guid.NewGuid().ToString(),
+                Name = name,
+                Description = description,
+                Price = parsedPrice,
+                ImageUri = imageUri
+            };
+
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("ManageProducts");
+        }
+
+        public async Task<IActionResult> ManageProducts()
+        {
+            var products = await _context.Products.ToListAsync();
+            return View(products);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveCustomerProfile(CustomerProfile profile)
+        {
+            profile.PartitionKey = profile.CustomerEmail.Substring(0, 1).ToUpper();
+            profile.RowKey = Guid.NewGuid().ToString();
+
+            _context.CustomerProfiles.Add(profile);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("CustomerProfiles");
+        }
+
+        public async Task<IActionResult> CustomerProfiles()
+        {
+            var profiles = await _context.CustomerProfiles.ToListAsync();
+            return View(profiles);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddToCart(string partitionKey, string rowKey)
+        {
+            var userId = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(userId)) return RedirectToAction("Login", "Home");
+
+            var product = await _context.Products
+                .FirstOrDefaultAsync(p => p.PartitionKey == partitionKey && p.RowKey == rowKey);
+
+            if (product == null) return NotFound();
+
+            var cartItem = new CartItem
+            {
+                PartitionKey = userId,
+                RowKey = Guid.NewGuid().ToString(),
+                ProductName = product.Name,
+                ProductPrice = product.Price,
+                ProductImageUri = product.ImageUri,
+                ProductRowKey = product.RowKey,
+                ProductPartitionKey = product.PartitionKey
+            };
+
+            _context.CartItems.Add(cartItem);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("ViewCart");
+        }
+
+        public async Task<IActionResult> ViewCart()
+        {
+            var userId = HttpContext.Session.GetString("UserEmail");
+            var cartItems = await _context.CartItems
+                .Where(c => c.PartitionKey == userId).ToListAsync();
+            return View(cartItems);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveFromCart(string rowKey)
+        {
+            var userId = HttpContext.Session.GetString("UserEmail");
+            var cartItem = await _context.CartItems
+                .FirstOrDefaultAsync(c => c.PartitionKey == userId && c.RowKey == rowKey);
+
+            if (cartItem != null)
+            {
+                _context.CartItems.Remove(cartItem);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("ViewCart");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateCartQuantity(string rowKey, string action)
+        {
+            var userId = HttpContext.Session.GetString("UserEmail");
+            var cartItem = await _context.CartItems
+                .FirstOrDefaultAsync(c => c.PartitionKey == userId && c.RowKey == rowKey);
+
+            if (cartItem != null)
+            {
+                if (action == "increase")
+                {
+                    cartItem.Quantity += 1;
+                }
+                else if (action == "decrease" && cartItem.Quantity > 1)
+                {
+                    cartItem.Quantity -= 1;
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("ViewCart");
+        }
+
+        public async Task<IActionResult> CheckoutCart()
+        {
+            var userId = HttpContext.Session.GetString("UserEmail");
+            var cartItems = await _context.CartItems
+                .Where(c => c.PartitionKey == userId).ToListAsync();
+
+            if (!cartItems.Any()) return RedirectToAction("ViewCart");
+            return View("Checkout", cartItems);
         }
     }
 }
