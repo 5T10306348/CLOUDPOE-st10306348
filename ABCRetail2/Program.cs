@@ -17,6 +17,9 @@ namespace ABCRetail2
             builder.Services.AddDbContext<RetailContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("ABCRetailDatabase")));
 
+            // Add IHttpContextAccessor to access HttpContext in views and controllers
+            builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
             // Add distributed memory cache and session support
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>
@@ -41,10 +44,9 @@ namespace ABCRetail2
 
             app.UseRouting();
 
-            // Use session middleware
+            // Use session middleware before authorization to ensure session data is available
             app.UseSession();
 
-            // Use authorization middleware
             app.UseAuthorization();
 
             // Map controller routes

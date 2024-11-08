@@ -21,6 +21,7 @@ namespace ABCRetail2.Controllers
             return View();
         }
 
+   
         public async Task<IActionResult> ViewProducts()
         {
             var products = await _context.Products.ToListAsync();
@@ -396,26 +397,27 @@ namespace ABCRetail2.Controllers
             return RedirectToAction("ManageProducts");
         }
 
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View(new UserAccount());
+        }
+
         [HttpPost]
         public async Task<IActionResult> Register(UserAccount user)
         {
             if (ModelState.IsValid)
             {
-                // Set PartitionKey and RowKey
-                user.PartitionKey = "User";
-                user.RowKey = Guid.NewGuid().ToString();
-
-                // Hash the password (use a real hashing method in production)
+                // Hash the password for storage
                 user.Password = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(user.Password));
 
-                // Save the user to the database
                 _context.UserAccounts.Add(user);
                 await _context.SaveChangesAsync();
 
                 return RedirectToAction("Login");
             }
 
-            return View(user); // Reloads the form with validation errors if any
+            return View(user); // Return view with validation errors if any
         }
 
         [HttpGet]
@@ -427,7 +429,6 @@ namespace ABCRetail2.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string email, string password)
         {
-            // Find the user in the database by email
             var user = await _context.UserAccounts.FirstOrDefaultAsync(u => u.Email == email);
 
             if (user == null)
@@ -436,7 +437,7 @@ namespace ABCRetail2.Controllers
                 return View();
             }
 
-            // Decode and verify the password
+            // Verify password
             var hashedPassword = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password));
             if (user.Password != hashedPassword)
             {
@@ -454,7 +455,6 @@ namespace ABCRetail2.Controllers
         [HttpPost]
         public IActionResult Logout()
         {
-            // Clear the session
             HttpContext.Session.Clear();
             return RedirectToAction("Login");
         }
