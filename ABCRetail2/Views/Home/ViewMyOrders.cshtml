@@ -1,0 +1,40 @@
+﻿@model IEnumerable<ABCRetail2.Models.Order>
+
+@{
+    ViewBag.Title = "My Orders";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>My Orders</h2>
+
+@if (!Model.Any())
+{
+    <p>You have no orders at the moment.</p>
+}
+else
+{
+    <div class="container my-5">
+        @foreach (var order in Model)
+        {
+            <div class="card mb-4 shadow-lg">
+                <div class="card-body">
+                    <h5 class="card-title">@order.ProductName</h5>
+                    <p class="card-text"><strong>Price:</strong> R@(order.ProductPrice)</p>
+                    <p class="card-text"><strong>Quantity:</strong> @(order.Quantity)</p>
+                    <p class="card-text"><strong>Address:</strong> @order.Address, @order.City, @order.Province, @order.ZipCode, @order.Country</p>
+
+                    @if (!string.IsNullOrEmpty(order.ProductImageUri))
+                    {
+                        <img class="img-thumbnail" src="@order.ProductImageUri" alt="Product Image" style="max-width: 150px;" />
+                    }
+                    else
+                    {
+                        <p class="text-muted">No image available</p>
+                    }
+
+                    <p class="text-muted">Order placed on: @order.Timestamp.ToString("MMMM dd, yyyy")</p>
+                </div>
+            </div>
+        }
+    </div>
+}

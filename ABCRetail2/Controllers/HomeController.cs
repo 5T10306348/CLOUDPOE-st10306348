@@ -516,5 +516,24 @@ namespace ABCRetail2.Controllers
             return RedirectToAction("Login");
         }
 
+        public async Task<IActionResult> ViewMyOrders()
+        {
+            // Retrieve the logged-in user's email from the session
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                // If the user is not logged in, redirect to the login page
+                return RedirectToAction("Login", "Home");
+            }
+
+            // Fetch orders associated with the logged-in user's email
+            var userOrders = await _context.Orders
+                .Where(order => order.CustomerEmail == userEmail)
+                .ToListAsync();
+
+            // Pass the user's orders to the view
+            return View(userOrders);
+        }
     }
 }

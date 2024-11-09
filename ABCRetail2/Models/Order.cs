@@ -50,5 +50,7 @@ namespace ABCRetail2.Models
         public string ProductImageUri { get; set; }
 
         public DateTime Timestamp { get; set; } = DateTime.Now;
+
+        public int Quantity { get; set; }
     }
 }
