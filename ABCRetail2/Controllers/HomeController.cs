@@ -66,60 +66,48 @@ namespace ABCRetail2.Controllers
         [HttpPost]
         public async Task<IActionResult> PlaceOrder(
             string[] partitionKeys, string[] rowKeys,
-            string customerName, string address,
-            string city, string zipCode, string country, string province)
+            string customerName, string address, string city, string zipCode, string country, string province)
         {
-            var customerEmail = HttpContext.Session.GetString("UserEmail"); // Get the logged-in user's email
-            if (string.IsNullOrEmpty(customerEmail))
-            {
-                return RedirectToAction("Login", "Home"); // Redirect to login if the email is not found
-            }
+            var userId = HttpContext.Session.GetString("UserEmail");
+            var commonPartitionKey = Guid.NewGuid().ToString(); // Use a unique key for each order session
 
-            var userId = customerEmail; // User's email as partition key or unique identifier
             var cartItems = await _context.CartItems
-                .Where(c => c.PartitionKey == userId).ToListAsync();
+                .Where(c => partitionKeys.Contains(c.ProductPartitionKey) && rowKeys.Contains(c.ProductRowKey))
+                .ToListAsync();
 
-            var orders = new List<Order>();
-            for (int i = 0; i < partitionKeys.Length; i++)
+            foreach (var cartItem in cartItems)
             {
-                var cartItem = cartItems
-                    .FirstOrDefault(c => c.ProductPartitionKey == partitionKeys[i] && c.ProductRowKey == rowKeys[i]);
-
-                if (cartItem != null)
+                var order = new Order
                 {
-                    var order = new Order
-                    {
-                        PartitionKey = customerEmail,
-                        RowKey = Guid.NewGuid().ToString(),
-                        CustomerName = customerName,
-                        CustomerEmail = customerEmail,
-                        Address = address,
-                        City = city,
-                        ZipCode = zipCode,
-                        Country = country,
-                        Province = province,
-                        ProductName = cartItem.ProductName,
-                        ProductPrice = cartItem.ProductPrice,
-                        ProductImageUri = cartItem.ProductImageUri,
-                        Quantity = cartItem.Quantity
-                    };
+                    PartitionKey = commonPartitionKey, // Assign a common key for this order session
+                    RowKey = Guid.NewGuid().ToString(),
+                    CustomerName = customerName,
+                    CustomerEmail = userId,
+                    Address = address,
+                    City = city,
+                    ZipCode = zipCode,
+                    Country = country,
+                    Province = province,
+                    ProductName = cartItem.ProductName,
+                    ProductPrice = cartItem.ProductPrice,
+                    ProductImageUri = cartItem.ProductImageUri,
+                    Quantity = cartItem.Quantity
+                };
 
-                    _context.Orders.Add(order);
-                    orders.Add(order);
-                }
+                _context.Orders.Add(order);
             }
 
             await _context.SaveChangesAsync();
             _context.CartItems.RemoveRange(cartItems);
             await _context.SaveChangesAsync();
 
-            return View("OrderConfirmation", orders);
+            return RedirectToAction("OrderConfirmation", new { partitionKey = commonPartitionKey });
         }
 
-        public async Task<IActionResult> OrderConfirmation(string orderId)
+        public async Task<IActionResult> OrderConfirmation(string partitionKey)
         {
             var orders = await _context.Orders
-                .Where(o => o.RowKey == orderId).ToListAsync();
+                .Where(o => o.PartitionKey == partitionKey).ToListAsync();
 
             if (!orders.Any()) return NotFound("Order not found.");
             return View(orders);
@@ -540,5 +528,6 @@ namespace ABCRetail2.Controllers
             // Pass the user's orders to the view
             return View(userOrders);
         }
+
     }
 }
