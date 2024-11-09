@@ -63,17 +63,21 @@ namespace ABCRetail2.Controllers
 
             return View(checkoutViewModel);
         }
-
         [HttpPost]
         public async Task<IActionResult> PlaceOrder(
-      string[] partitionKeys, string[] rowKeys,
-      string customerName, string customerEmail, string address,
-      string city, string zipCode, string country, string province)
+            string[] partitionKeys, string[] rowKeys,
+            string customerName, string address,
+            string city, string zipCode, string country, string province)
         {
-            var userId = HttpContext.Session.GetString("UserEmail");
+            var customerEmail = HttpContext.Session.GetString("UserEmail"); // Get the logged-in user's email
+            if (string.IsNullOrEmpty(customerEmail))
+            {
+                return RedirectToAction("Login", "Home"); // Redirect to login if the email is not found
+            }
+
+            var userId = customerEmail; // User's email as partition key or unique identifier
             var cartItems = await _context.CartItems
-                .Where(c => c.PartitionKey == userId)
-                .ToListAsync();
+                .Where(c => c.PartitionKey == userId).ToListAsync();
 
             var orders = new List<Order>();
             for (int i = 0; i < partitionKeys.Length; i++)
@@ -85,7 +89,7 @@ namespace ABCRetail2.Controllers
                 {
                     var order = new Order
                     {
-                        PartitionKey = customerEmail,  // Ensure PartitionKey is populated with a value, such as the customer email
+                        PartitionKey = customerEmail,
                         RowKey = Guid.NewGuid().ToString(),
                         CustomerName = customerName,
                         CustomerEmail = customerEmail,
@@ -96,7 +100,8 @@ namespace ABCRetail2.Controllers
                         Province = province,
                         ProductName = cartItem.ProductName,
                         ProductPrice = cartItem.ProductPrice,
-                        ProductImageUri = cartItem.ProductImageUri
+                        ProductImageUri = cartItem.ProductImageUri,
+                        Quantity = cartItem.Quantity
                     };
 
                     _context.Orders.Add(order);
@@ -289,6 +294,7 @@ namespace ABCRetail2.Controllers
         public async Task<IActionResult> CheckoutCart()
         {
             var userId = HttpContext.Session.GetString("UserEmail");
+
             var cartItems = await _context.CartItems
                 .Where(c => c.PartitionKey == userId)
                 .ToListAsync();
@@ -301,9 +307,8 @@ namespace ABCRetail2.Controllers
             var checkoutViewModel = new CheckoutViewModel
             {
                 CartItems = cartItems,
-                CustomerName = HttpContext.Session.GetString("CustomerName"),
-                CustomerEmail = userId,
-                // Initialize other customer information if available in session
+                CustomerName = HttpContext.Session.GetString("UserName"),
+                CustomerEmail = userId // Automatically set the email from the session
             };
 
             return View("Checkout", checkoutViewModel);

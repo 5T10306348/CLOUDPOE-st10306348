@@ -12,6 +12,7 @@
 
     <div class="row">
         <div class="col-md-6">
+            <!-- Display each item in the cart -->
             @foreach (var item in Model.CartItems)
             {
                 <div class="card mb-4 fade-in-up">
@@ -34,15 +35,10 @@
                     <input type="hidden" name="rowKeys" value="@item.ProductRowKey" />
                 }
 
-                <!-- Customer Information -->
+                <!-- Customer information fields without email -->
                 <div class="mb-3">
                     <label for="customerName" class="form-label">Your Name</label>
                     <input type="text" class="form-control" id="customerName" name="customerName" value="@Model.CustomerName" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="customerEmail" class="form-label">Your Email</label>
-                    <input type="email" class="form-control" id="customerEmail" name="customerEmail" value="@Model.CustomerEmail" required>
                 </div>
 
                 <div class="mb-3">
