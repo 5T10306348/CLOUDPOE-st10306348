@@ -4,18 +4,18 @@ namespace ABCRetail2.Models;
 public class UserAccount
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; } // Primary key with Identity
+    public int Id { get; set; } // Primary Key as an int
 
     [Required]
-    [MaxLength(200)]
+    [MaxLength(100)]
     public string Username { get; set; }
 
     [Required]
     [MaxLength(200)]
-    [EmailAddress]
     public string Email { get; set; }
 
     [Required]
-    public string Password { get; set; }
+    public string Password { get; set; }  // Store hashed passwords for security
+
+    public DateTime Timestamp { get; set; } = DateTime.Now;
 }

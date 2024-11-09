@@ -3,7 +3,8 @@ using ABCRetail2.Models;
 using ABCRetail2.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using System.Security.Cryptography;
+using System.Text;
 
 namespace ABCRetail2.Controllers
 {
@@ -21,7 +22,14 @@ namespace ABCRetail2.Controllers
             return View();
         }
 
-   
+        public IActionResult AboutUs()
+        {
+            return View();
+        }
+        public IActionResult Contracts()
+        {
+            return View();
+        }
         public async Task<IActionResult> ViewProducts()
         {
             var products = await _context.Products.ToListAsync();
@@ -308,9 +316,19 @@ namespace ABCRetail2.Controllers
                     await file.CopyToAsync(fileStream);
                 }
 
-                // Optionally, save file information in the database (e.g., file name, path, upload date)
+                // Create a new Contract instance with the file details
+                var contract = new Contract
+                {
+                    FileName = file.FileName,
+                    FilePath = filePath,
+                    UploadDate = DateTime.Now
+                };
 
-                // Redirect or display success message after upload
+                // Save contract information to the database
+                _context.Contracts.Add(contract);
+                await _context.SaveChangesAsync();
+
+                // Redirect to display success message after upload
                 return RedirectToAction("Contracts");
             }
 
@@ -403,13 +421,17 @@ namespace ABCRetail2.Controllers
             return View(new UserAccount());
         }
 
+
         [HttpPost]
         public async Task<IActionResult> Register(UserAccount user)
         {
             if (ModelState.IsValid)
             {
-                // Hash the password for storage
-                user.Password = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(user.Password));
+                // Normalize email to lowercase
+                user.Email = user.Email.ToLower();
+
+                // Hash password
+                user.Password = HashPassword(user.Password);
 
                 _context.UserAccounts.Add(user);
                 await _context.SaveChangesAsync();
@@ -420,6 +442,7 @@ namespace ABCRetail2.Controllers
             return View(user); // Return view with validation errors if any
         }
 
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -429,27 +452,49 @@ namespace ABCRetail2.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string email, string password)
         {
+            // Normalize email to lowercase
+            email = email.ToLower();
+
+            // Find user by email
             var user = await _context.UserAccounts.FirstOrDefaultAsync(u => u.Email == email);
 
             if (user == null)
             {
                 ModelState.AddModelError(string.Empty, "Invalid email or password.");
+                Console.WriteLine("User not found with email: " + email);
                 return View();
             }
 
-            // Verify password
-            var hashedPassword = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password));
-            if (user.Password != hashedPassword)
+            // Log the retrieved hashed password for debugging
+            Console.WriteLine("Retrieved hashed password from DB: " + user.Password);
+
+            // Hash the input password and compare it with the stored hash
+            var hashedInputPassword = HashPassword(password);
+            Console.WriteLine("Hashed input password: " + hashedInputPassword);
+
+            if (user.Password != hashedInputPassword)
             {
                 ModelState.AddModelError(string.Empty, "Invalid email or password.");
+                Console.WriteLine("Password does not match.");
                 return View();
             }
 
-            // Set session or authentication cookies
+            // Set session data for the user
             HttpContext.Session.SetString("UserEmail", user.Email);
             HttpContext.Session.SetString("UserName", user.Username);
+            Console.WriteLine("Login successful, redirecting to Index.");
 
             return RedirectToAction("Index", "Home");
+        }
+
+        // A method to hash the password consistently
+        private string HashPassword(string password)
+        {
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                byte[] bytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                return Convert.ToBase64String(bytes);
+            }
         }
 
         [HttpPost]

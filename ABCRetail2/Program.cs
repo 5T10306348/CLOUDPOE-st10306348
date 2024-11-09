@@ -44,9 +44,13 @@ namespace ABCRetail2
 
             app.UseRouting();
 
-            // Use session middleware before authorization to ensure session data is available
+            // Use session middleware before authentication and authorization to ensure session data is available
             app.UseSession();
 
+            // Add authentication middleware
+            app.UseAuthentication();
+
+            // Add authorization middleware
             app.UseAuthorization();
 
             // Map controller routes
