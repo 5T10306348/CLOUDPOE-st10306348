@@ -66,13 +66,14 @@ namespace ABCRetail2.Controllers
 
         [HttpPost]
         public async Task<IActionResult> PlaceOrder(
-            string[] partitionKeys, string[] rowKeys,
-            string customerName, string customerEmail, string address,
-            string city, string zipCode, string country, string province)
+      string[] partitionKeys, string[] rowKeys,
+      string customerName, string customerEmail, string address,
+      string city, string zipCode, string country, string province)
         {
             var userId = HttpContext.Session.GetString("UserEmail");
             var cartItems = await _context.CartItems
-                .Where(c => c.PartitionKey == userId).ToListAsync();
+                .Where(c => c.PartitionKey == userId)
+                .ToListAsync();
 
             var orders = new List<Order>();
             for (int i = 0; i < partitionKeys.Length; i++)
@@ -84,7 +85,7 @@ namespace ABCRetail2.Controllers
                 {
                     var order = new Order
                     {
-                        PartitionKey = customerEmail,
+                        PartitionKey = customerEmail,  // Ensure PartitionKey is populated with a value, such as the customer email
                         RowKey = Guid.NewGuid().ToString(),
                         CustomerName = customerName,
                         CustomerEmail = customerEmail,
@@ -100,15 +101,6 @@ namespace ABCRetail2.Controllers
 
                     _context.Orders.Add(order);
                     orders.Add(order);
-
-                    var orderMessage = new OrderMessage
-                    {
-                        CustomerEmail = customerEmail,
-                        ProductName = cartItem.ProductName,
-                        ProductPrice = cartItem.ProductPrice
-                    };
-
-                    // Process orderMessage logic here if needed
                 }
             }
 
@@ -298,10 +290,23 @@ namespace ABCRetail2.Controllers
         {
             var userId = HttpContext.Session.GetString("UserEmail");
             var cartItems = await _context.CartItems
-                .Where(c => c.PartitionKey == userId).ToListAsync();
+                .Where(c => c.PartitionKey == userId)
+                .ToListAsync();
 
-            if (!cartItems.Any()) return RedirectToAction("ViewCart");
-            return View("Checkout", cartItems);
+            if (!cartItems.Any())
+            {
+                return RedirectToAction("ViewCart");
+            }
+
+            var checkoutViewModel = new CheckoutViewModel
+            {
+                CartItems = cartItems,
+                CustomerName = HttpContext.Session.GetString("CustomerName"),
+                CustomerEmail = userId,
+                // Initialize other customer information if available in session
+            };
+
+            return View("Checkout", checkoutViewModel);
         }
 
         [HttpPost]
