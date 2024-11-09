@@ -189,27 +189,33 @@ namespace ABCRetail2.Controllers
             return RedirectToAction("ManageProducts");
         }
 
+        public async Task<IActionResult> CustomerProfiles()
+        {
+            var profiles = await _context.CustomerProfiles.ToListAsync();
+            return View(profiles); // Pass all profiles to the view
+        }
+
         [HttpPost]
         public async Task<IActionResult> SaveCustomerProfile(CustomerProfile profile)
         {
             if (ModelState.IsValid)
             {
-                profile.PartitionKey = profile.CustomerEmail.Substring(0, 1).ToUpper();
-                profile.RowKey = Guid.NewGuid().ToString();
-
-                _context.CustomerProfiles.Add(profile);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    _context.CustomerProfiles.Add(profile);
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine("Profile saved successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error saving profile: " + ex.Message);
+                }
 
                 return RedirectToAction("CustomerProfiles");
             }
 
-            return View("AddCustomerProfile", profile); // Reload form with validation errors if any
-        }
-
-        public async Task<IActionResult> CustomerProfiles()
-        {
             var profiles = await _context.CustomerProfiles.ToListAsync();
-            return View(profiles);
+            return View("CustomerProfiles", profiles); // Reload the view with current data
         }
 
         [HttpPost]
@@ -400,7 +406,7 @@ namespace ABCRetail2.Controllers
             return View(product);
         }
 
-        [HttpPost]
+        [HttpGet]  // Allow GET for this action
         public async Task<IActionResult> DeleteProduct(string partitionKey, string rowKey)
         {
             var product = await _context.Products
@@ -414,6 +420,7 @@ namespace ABCRetail2.Controllers
 
             return RedirectToAction("ManageProducts");
         }
+
 
         [HttpGet]
         public IActionResult Register()
