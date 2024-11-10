@@ -1,4 +1,6 @@
-﻿@{
+﻿@model IEnumerable<ABCRetail2.Models.Contract>
+
+@{
     ViewBag.Title = "Contracts";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -22,4 +24,27 @@
             </div>
         </div>
     </div>
+</div>
+
+<div class="container mt-5">
+    <h3>Uploaded Contracts</h3>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Contract ID</th>
+                <th>File Name</th>
+                <th>Upload Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var contract in Model)
+            {
+                <tr>
+                    <td>@contract.Id</td>
+                    <td>@contract.FileName</td>
+                    <td>@contract.UploadDate.ToString("yyyy-MM-dd")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>

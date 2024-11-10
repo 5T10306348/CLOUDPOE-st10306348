@@ -26,10 +26,12 @@ namespace ABCRetail2.Controllers
         {
             return View();
         }
-        public IActionResult Contracts()
+        public async Task<IActionResult> Contracts()
         {
-            return View();
+            var contracts = await _context.Contracts.ToListAsync();
+            return View(contracts);
         }
+
         public async Task<IActionResult> ViewProducts()
         {
             var products = await _context.Products.ToListAsync();
@@ -528,6 +530,7 @@ namespace ABCRetail2.Controllers
             // Pass the user's orders to the view
             return View(userOrders);
         }
+
 
     }
 }
