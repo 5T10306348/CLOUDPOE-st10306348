@@ -37,14 +37,15 @@
                             <a class="nav-link" href="/Home/Contracts">Contracts</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/Home/ViewOrders">View Orders</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="javascript:void(0)" onclick="promptPassword()">Manage Products</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link" href="/Home/ViewMyOrders">View My Orders</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="javascript:void(0)" onclick="promptPassword('/Home/ViewOrders')">View all Orders</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="javascript:void(0)" onclick="promptPassword('/Home/ManageProducts')">Manage Products</a>
+                        </li>
+
                     }
                     else
                     {
@@ -64,7 +65,6 @@
                         <li class="nav-item">
                             <a class="nav-link" href="javascript:void(0)" onclick="redirectWithNotification('/Home/Login')">View My Orders</a>
                         </li>
-
                     }
                 </ul>
                 <ul class="navbar-nav mb-2 mb-lg-0">
@@ -84,7 +84,6 @@
                         <li class="nav-item">
                             <a class="nav-link" href="/Home/Logout">Logout</a>
                         </li>
-
                     }
                     else
                     {
@@ -102,7 +101,6 @@
                         <li class="nav-item">
                             <a class="nav-link" href="/Home/Register">Register</a>
                         </li>
-
                     }
                 </ul>
             </div>
@@ -144,6 +142,7 @@
     <!-- JavaScript for redirect, notification, and password protection -->
     <script>
         const adminPassword = "Admin@123"; // The correct password
+        let targetUrl = ''; // Store the URL to navigate to after password confirmation
 
         function redirectWithNotification(url) {
             document.getElementById('loginAlert').style.display = 'block';
@@ -152,7 +151,8 @@
             }, 1500);
         }
 
-        function promptPassword() {
+        function promptPassword(target) {
+            targetUrl = target; // Set the target URL for the modal
             var modal = new bootstrap.Modal(document.getElementById('passwordModal'));
             modal.show();
         }
@@ -160,7 +160,7 @@
         function checkPassword() {
             var enteredPassword = document.getElementById('adminPassword').value;
             if (enteredPassword === adminPassword) {
-                window.location.href = '/Home/ManageProducts';
+                window.location.href = targetUrl;
             } else {
                 document.getElementById('passwordError').style.display = 'block';
             }
