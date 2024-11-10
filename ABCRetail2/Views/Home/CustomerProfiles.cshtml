@@ -4,6 +4,7 @@
     ViewBag.Title = "Customer Profiles";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<link href="~/css/customerprofile.css" rel="stylesheet" />
 
 <h2>Customer Profiles</h2>
 
@@ -36,7 +37,6 @@
         <tr>
             <th>Name</th>
             <th>Email</th>
-            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -45,10 +45,6 @@
             <tr>
                 <td>@profile.CustomerName</td>
                 <td>@profile.CustomerEmail</td>
-                <td>
-                    <a href="@Url.Action("EditCustomerProfile", "Home", new { id = profile.Id })" class="btn btn-warning btn-sm">Edit</a>
-                    <a href="@Url.Action("DeleteCustomerProfile", "Home", new { id = profile.Id })" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this profile?');">Delete</a>
-                </td>
             </tr>
         }
     </tbody>
