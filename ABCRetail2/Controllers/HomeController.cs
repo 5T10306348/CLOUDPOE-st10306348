@@ -309,32 +309,24 @@ namespace ABCRetail2.Controllers
         {
             if (file != null && file.Length > 0)
             {
-                // Define the path to save the file
-                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "contracts");
-                Directory.CreateDirectory(uploadsFolder);  // Ensure the folder exists
-
-                string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                // Save the file to the server
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                using (var memoryStream = new MemoryStream())
                 {
-                    await file.CopyToAsync(fileStream);
+                    await file.CopyToAsync(memoryStream);
+
+                    // Create a new Contract instance with the file details
+                    var contract = new Contract
+                    {
+                        FileName = file.FileName,
+                        UploadDate = DateTime.Now,
+                        FileData = memoryStream.ToArray(),  // Save the file content as binary data
+                        ContentType = file.ContentType
+                    };
+
+                    // Save contract information to the database
+                    _context.Contracts.Add(contract);
+                    await _context.SaveChangesAsync();
                 }
 
-                // Create a new Contract instance with the file details
-                var contract = new Contract
-                {
-                    FileName = file.FileName,
-                    FilePath = filePath,
-                    UploadDate = DateTime.Now
-                };
-
-                // Save contract information to the database
-                _context.Contracts.Add(contract);
-                await _context.SaveChangesAsync();
-
-                // Redirect to display success message after upload
                 return RedirectToAction("Contracts");
             }
 
