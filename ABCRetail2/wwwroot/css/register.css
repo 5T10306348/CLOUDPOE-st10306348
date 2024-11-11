@@ -1,0 +1,81 @@
+﻿/* General container styling */
+.container {
+    margin-top: 80px;
+}
+
+/* Card styling */
+.card {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+}
+
+/* Heading */
+h2 {
+    color: #0056b3;
+    font-weight: bold;
+    font-size: 1.8rem;
+}
+
+/* Form styling */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: bold;
+    color: #333;
+}
+
+.form-control {
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+}
+
+    .form-control:focus {
+        border-color: #0056b3;
+        box-shadow: none;
+    }
+
+/* Button styling */
+.btn-primary {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 25px;
+    transition: background-color 0.3s ease;
+}
+
+    .btn-primary:hover {
+        background-color: #004494;
+        border-color: #004494;
+    }
+
+.btn-block {
+    width: 100%;
+}
+
+/* Validation styling */
+.was-validated .form-control:invalid {
+    border-color: #e3342f;
+}
+
+    .was-validated .form-control:invalid:focus {
+        border-color: #e3342f;
+        box-shadow: none;
+    }
+
+.invalid-feedback {
+    color: #e3342f;
+    font-size: 0.875rem;
+}
+
+/* Additional spacing */
+.d-grid {
+    margin-top: 10px;
+}

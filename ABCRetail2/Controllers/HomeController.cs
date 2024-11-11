@@ -413,13 +413,11 @@ namespace ABCRetail2.Controllers
             return RedirectToAction("ManageProducts");
         }
 
-
         [HttpGet]
         public IActionResult Register()
         {
             return View(new UserAccount());
         }
-
 
         [HttpPost]
         public async Task<IActionResult> Register(UserAccount user)
@@ -429,9 +427,19 @@ namespace ABCRetail2.Controllers
                 // Normalize email to lowercase
                 user.Email = user.Email.ToLower();
 
-                // Hash password
-                user.Password = HashPassword(user.Password);
+                // Check if an account with this email already exists
+                var existingUser = await _context.UserAccounts
+                    .FirstOrDefaultAsync(u => u.Email == user.Email);
 
+                if (existingUser != null)
+                {
+                    // Add error to ModelState and return view if email already exists
+                    ModelState.AddModelError("Email", "An account with this email already exists.");
+                    return View(user);
+                }
+
+                // Hash password and save the new user
+                user.Password = HashPassword(user.Password);
                 _context.UserAccounts.Add(user);
                 await _context.SaveChangesAsync();
 
@@ -496,11 +504,10 @@ namespace ABCRetail2.Controllers
             }
         }
 
-        [HttpPost]
         public IActionResult Logout()
         {
-            HttpContext.Session.Clear();
-            return RedirectToAction("Login");
+            HttpContext.Session.Clear(); // Clear all session data
+            return RedirectToAction("Login"); // Redirect to the login page or any other page
         }
 
         public async Task<IActionResult> ViewMyOrders()
